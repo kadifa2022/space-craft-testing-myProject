@@ -44,6 +44,7 @@ public class CreateGameServiceImplTest {
         createGameDTO.setUsername("username");
         createGameDTO.setBoost(Boost.BIG_BOMB);
         createGameDTO.setLevel(Level.EASY);
+
         Player player=new Player();
 
         Set<Target> targetSet=new HashSet<>(){{
@@ -71,6 +72,21 @@ public class CreateGameServiceImplTest {
         CreateGameDTO createGameDTO = new CreateGameDTO();
         createGameDTO.setUsername("username");
         createGameDTO.setBoost(Boost.BIG_BOMB);
+
+//
+//        Player player=new Player();
+//
+//        Set<Target> targetSet=new HashSet<>(){{
+//            add(new Target());
+//        }};
+//
+//        Game game = new Game();
+//        game.setId(1L);
+//
+//        //when
+//        when(createPlayerService.createPlayer(createGameDTO)).thenReturn(player);
+//        when(createTargetService.createTargets(createGameDTO.getLevel())).thenReturn(targetSet);
+//        when(gameRepository.save(any())).thenReturn(game);
 
 
         RuntimeException runtimeException = assertThrows(RuntimeException.class, () ->{

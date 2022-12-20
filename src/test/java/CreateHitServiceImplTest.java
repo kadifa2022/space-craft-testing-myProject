@@ -183,7 +183,6 @@ public class CreateHitServiceImplTest {
         assertEquals(actualGamePlayer.getHealth(), 150);
 
 
-
     }
 
 

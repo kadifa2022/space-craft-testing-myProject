@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -92,37 +93,98 @@ public class CreateHitServiceImplTest {
 
          //then
             Game actualGame = createHitService.createHit(createHitDTO);
-            for(Target t: actualGame.getTargets()){
-                if(t.getId().equals(2L)){
-                    if(t.getHealth()<0){
+            for(Target t: actualGame.getTargets()) {
+                if (t.getId().equals(2L)) {
+                    if (t.getHealth() < 0) {
                         Assertions.fail();
                     }
-                }else{
-                    if(!t.getHealth().equals(790)){
+                } else {
+                    if (!t.getHealth().equals(790)) {
                         Assertions.fail();
                     }
                 }
             }
+    }
+
+
+    @Test
+    public void should_not_decrease_players_health_when_attack_type_is_player_to_target(){
+        //given
+        CreateHitDTO createHitDTO = new CreateHitDTO();
+        createHitDTO.setAttackType(AttackType.PLAYER_TO_TARGET);
+        createHitDTO.setGameId(1L);
+
+
+        Target target = new Target();
+        target.setHealth(1000);
+        target.setArmor(40);
+        target.setId(1L);
+
+
+        Set<Target> targetSet = new HashSet<>();
+        targetSet.add(target);
+
+        Player player= new Player();
+        player.setHealth(200);
+        player.setShootPower(250);
+
+        Game game = new Game();
+        game.setTargets(targetSet);
+        game.setPlayer(player);
+        game.setIsEnded(false);
+
+        //when
+        when(gameRepository.findById(createHitDTO.getGameId())).thenReturn(Optional.of(game));
+        when(gameRepository.save(game)).thenReturn(game);
+
+        Game actualGame= createHitService.createHit(createHitDTO);
+        //then
+        Player actualGamePlayer = actualGame.getPlayer();
+        assertEquals(actualGamePlayer.getHealth(), 200);
 
 
 
+    }
+    @Test
+    public void should_decrease_players_health_when_attack_type_is_target_to_player(){
+        //given
+        CreateHitDTO createHitDTO = new CreateHitDTO();
+        createHitDTO.setAttackType(AttackType.TARGET_TO_PLAYER);
+        createHitDTO.setGameId(1L);
+
+
+        Target target = new Target();
+        target.setHealth(1000);
+        target.setArmor(40);
+        target.setShootPower(100);
+        target.setId(1L);
+
+
+        Set<Target> targetSet = new HashSet<>();
+        targetSet.add(target);
+
+        Player player= new Player();
+        player.setHealth(200);
+        player.setArmor(50);
+        player.setShootPower(250);
+
+        Game game = new Game();
+        game.setTargets(targetSet);
+        game.setPlayer(player);
+        game.setIsEnded(false);
+
+        //when
+        when(gameRepository.findById(createHitDTO.getGameId())).thenReturn(Optional.of(game));
+        when(gameRepository.save(game)).thenReturn(game);
+
+        Game actualGame= createHitService.createHit(createHitDTO);
+        //then
+        Player actualGamePlayer = actualGame.getPlayer();
+        assertEquals(actualGamePlayer.getHealth(), 150);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        }
+    }
 
 
 

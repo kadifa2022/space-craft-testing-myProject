@@ -1,4 +1,6 @@
+import com.cydeo.spacecraft.dto.CreateGameDTO;
 import com.cydeo.spacecraft.entity.Target;
+import com.cydeo.spacecraft.enumtype.Boost;
 import com.cydeo.spacecraft.enumtype.Level;
 import com.cydeo.spacecraft.service.CreateTargetService;
 import com.cydeo.spacecraft.service.impl.CreateTargetServiceImpl;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CreateTargetServiceImplTest {
     private CreateTargetServiceImpl createTargetService;
@@ -31,7 +34,54 @@ public class CreateTargetServiceImplTest {
         assertEquals(target.getShootPower(),10);
 
     }
+    @Test
+    public void should_create_targets_with_medium_level(){
+        //given
+        Level level = Level.MEDIUM;
+        //when
+        Set<Target> targets = createTargetService.createTargets(level);
+        //then
+        Target target= targets.stream().findAny().get();
 
+        assertEquals(targets.size(),3);
+        assertEquals(target.getHealth(), 932);
+        assertEquals(target.getArmor(),301);
+        assertEquals(target.getShootPower(),10);
+
+    }
+
+    @Test
+    public void should_create_targets_with_hard_level(){
+        //given
+        Level level = Level.HARD;
+        //when
+        Set<Target> targets = createTargetService.createTargets(level);
+        //then
+        Target target= targets.stream().findAny().get();
+
+        assertEquals(targets.size(),4);
+        assertEquals(target.getHealth(), 1165);
+        assertEquals(target.getArmor(),581);
+        assertEquals(target.getShootPower(),1000);
+
+    }
+
+    @Test
+    public void should_throw_exception_when_boost_type_is_insane_speed() {
+
+        //give
+        Level level = Level.INSANE;
+
+        //when
+
+        //then
+        RuntimeException runtimeException = assertThrows(RuntimeException.class, () ->
+            createTargetService.createTargets(level));
+
+        assertEquals(runtimeException.getMessage(),"Level type must be valid" );
+
+
+    }
 
 
 }

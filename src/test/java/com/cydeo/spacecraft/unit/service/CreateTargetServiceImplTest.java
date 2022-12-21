@@ -1,3 +1,5 @@
+package com.cydeo.spacecraft.unit.service;
+
 import com.cydeo.spacecraft.dto.CreateGameDTO;
 import com.cydeo.spacecraft.entity.Target;
 import com.cydeo.spacecraft.enumtype.Boost;

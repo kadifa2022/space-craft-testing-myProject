@@ -1,15 +1,19 @@
 package com.cydeo.spacecraft.integration.controller;
 
 import com.cydeo.spacecraft.entity.Game;
+import com.cydeo.spacecraft.entity.Player;
+import com.cydeo.spacecraft.entity.Target;
 import com.cydeo.spacecraft.enumtype.AttackType;
 import com.cydeo.spacecraft.enumtype.Boost;
 import com.cydeo.spacecraft.enumtype.Level;
 import com.cydeo.spacecraft.model.request.CreateGameRequest;
 import com.cydeo.spacecraft.model.request.CreateHitRequest;
 import com.cydeo.spacecraft.model.response.CreateGameResponse;
+import com.cydeo.spacecraft.model.response.CreateHitResponse;
 import com.cydeo.spacecraft.repository.GameRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -25,6 +29,10 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 
+import javax.transaction.Transactional;
+import java.io.UnsupportedEncodingException;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @SpringBootTest
+@Transactional
 public class GameControllerIT {
 
     @Autowired
@@ -70,20 +79,76 @@ public class GameControllerIT {
     }
 
     @Test
-    @Sql(scripts ="/sql/hit_and_player_win.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "/sql/hit_and_player_win.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "/sql/remove_data.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     public void should_player_win_if_player_attack_to_target() throws Exception {
 
         CreateHitRequest createHitRequest = new CreateHitRequest();
         createHitRequest.setAttackType(AttackType.PLAYER_TO_TARGET);
         createHitRequest.setGameId(1L);
-
+        //make a http request to specific
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/game/createHit")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createHitRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.responseMessage").value("SUCCESS"))
+                .andExpect(jsonPath("$.isWin").value(true))
+                .andExpect(jsonPath("$.isEnded").value(true))
                 .andReturn();
+
+        String json = result.getResponse().getContentAsString();
+        CreateHitResponse createHitResponse = objectMapper.readValue(json, CreateHitResponse.class);
+
+        System.out.println(createHitResponse.getGameId());
+        Game game= gameRepository.findById(createHitResponse.getGameId()).orElseThrow();
+        assertEquals(game.getIsEnded(),true);
+        assertEquals(game.getIsWin(),true);
+
+        Set<Target> targetSet = game.getTargets();
+        Target target = targetSet.stream().findAny().get();
+
+        int targetHealth = target.getHealth();
+
+        if(targetHealth >= 0){
+            Assertions.fail();
+        }
+
+    }
+
+    @Test
+    @Sql(scripts = "/sql/hit_and_player_loose.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = "/sql/remove_data.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    public void should_player_loose_when_attack_type_is_target_to_player() throws Exception {
+        CreateHitRequest createHitRequest = new CreateHitRequest();
+        createHitRequest.setAttackType(AttackType.TARGET_TO_PLAYER);
+        createHitRequest.setGameId(1L);
+        //make a http request to specific
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/game/createHit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createHitRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.responseMessage").value("SUCCESS"))
+                .andExpect(jsonPath("$.isWin").value(false))
+                .andExpect(jsonPath("$.isEnded").value(true))
+                .andReturn();
+
+        String json = result.getResponse().getContentAsString();
+        CreateHitResponse createHitResponse = objectMapper.readValue(json, CreateHitResponse.class);
+
+
+        Game game= gameRepository.findById(createHitResponse.getGameId()).orElseThrow();
+
+        assertEquals(game.getIsEnded(),true);
+        assertEquals(game.getIsWin(),false);
+        Player player = game.getPlayer();
+
+
+        if(player.getHealth() >= 0){
+            Assertions.fail();
+        }
+        assertEquals(player.getHealth(), -99);
+
+    }
 
     }
 
@@ -106,4 +171,3 @@ public class GameControllerIT {
 
 
 
-}

@@ -79,7 +79,7 @@ public class GameControllerIT {
         assertEquals(game.getLevel(), createGameRequest.getLevel());
     }
 
-    @Test
+    @Test//added on top of the class @Transactional to be  accessible  to target<> and  player in DB
     @Sql(scripts = "/sql/hit_and_player_win.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = "/sql/remove_data.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     public void should_player_win_if_player_attack_to_target() throws Exception {

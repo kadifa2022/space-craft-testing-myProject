@@ -20,26 +20,46 @@ public class CreatePlayerServiceImplTest {
         createPlayerService = new CreatePlayerServiceImpl();
 
     }
-
     @Test
-    public void should_create_player_with_big_bomb_boost_type_and_level_easy() {
-
-        //give
+    public void should_create_player_with_big_bomb_boost_type_and_level_easy(){
+        //given
         CreateGameDTO createGameDTO = new CreateGameDTO();
         createGameDTO.setBoost(Boost.BIG_BOMB);
         createGameDTO.setLevel(Level.EASY);
         createGameDTO.setUsername("username");
-
         //when
-        Player player = createPlayerService.createPlayer(createGameDTO);
+        Player player=createPlayerService.createPlayer(createGameDTO);
 
         //then
         assertEquals(player.getHealth(), 2000);
-        assertEquals(player.getArmor(), 7);
-        assertEquals(player.getShootPower(), 5010);
-
+        assertEquals(player.getArmor(),7);
+        assertEquals(player.getShootPower(),5010);
 
     }
+
+
+
+
+
+//    @Test
+//    public void should_create_player_with_big_bomb_boost_type_and_level_easy() {
+//
+//        //give
+//        CreateGameDTO createGameDTO = new CreateGameDTO();
+//        createGameDTO.setBoost(Boost.BIG_BOMB);
+//        createGameDTO.setLevel(Level.EASY);
+//        createGameDTO.setUsername("username");
+//
+//        //when
+//        Player player = createPlayerService.createPlayer(createGameDTO);
+//
+//        //then
+//        assertEquals(player.getHealth(), 2000);
+//        assertEquals(player.getArmor(), 7);
+//        assertEquals(player.getShootPower(), 5010);
+//
+//
+//    }
 
     @Test
     public void should_create_player_with_extra_shield_boost_type_and_level_easy() {
